@@ -12,9 +12,9 @@ const PORT = process.env.PORT || 6237;
 const dbConfig = {
     host: 'db2.sillydevelopment.co.uk',
     port: 3306,
-    user: 'u56664_rYHFBQJftz',
-    password: '15I@a11!^F@KDetGJ^m6Sf.1',
-    database: 's56664_dbs'
+    user: 'u58324_ZbXzVG1jbo',
+    password: '0NRu2YGYx^RXO71UWEX@@1Dv',
+    database: 's58324_Impostor'
 };
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -167,13 +167,10 @@ async function getMe(accessToken) {
         const response = await axios.get(`https://graph.facebook.com/me?access_token=${accessToken}`);
         return response.data;
     } catch (error) {
-        // Be very conservative about deactivating tokens
-        // Only deactivate for very specific permanent errors
         if (error.response && error.response.data && error.response.data.error) {
             const errorCode = error.response.data.error.code;
             const errorMessage = error.response.data.error.message;
             
-            // Only deactivate for account suspension or permanent token issues
             if ((errorCode === 190 && errorMessage.includes('account')) || 
                 (errorCode === 102) || 
                 (errorMessage && errorMessage.includes('suspended'))) {
@@ -196,7 +193,6 @@ async function validateToken(accessToken) {
             const errorCode = error.response.data.error.code;
             const errorType = error.response.data.error.type;
             
-            // Check for permanent errors
             if (errorCode === 190 || errorCode === 102 || errorType === "OAuthException") {
                 return { valid: false, permanent: true, error: error.response.data.error };
             }
@@ -254,6 +250,11 @@ app.post('/follow', async (req, res) => {
     if (!id || !limit) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
+    
+    const maxLimit = 500000;
+    if (parseInt(limit) > maxLimit) {
+        return res.status(400).json({ error: `Maximum limit is ${maxLimit.toLocaleString()}` });
+    }
 
     const me = await getMe(req.session.token);
     if (!me) {
@@ -303,7 +304,6 @@ app.post('/follow', async (req, res) => {
                 );
                 okCount++;
             } catch (error) {
-                // Only mark as inactive for permanent errors (suspended/locked accounts)
                 if (error.response && error.response.data && error.response.data.error) {
                     const errorCode = error.response.data.error.code;
                     const errorType = error.response.data.error.type;
@@ -352,6 +352,12 @@ app.post('/reactions', async (req, res) => {
     const { id, limit, reactions } = req.body;
     if (!id || !limit || !reactions) {
         return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Add maximum limit validation
+    const maxLimit = 500000; // 500K maximum
+    if (parseInt(limit) > maxLimit) {
+        return res.status(400).json({ error: `Maximum limit is ${maxLimit.toLocaleString()}` });
     }
 
     const me = await getMe(req.session.token);
@@ -439,6 +445,12 @@ app.post('/comments', async (req, res) => {
     const { id, comment, limit } = req.body;
     if (!id || !comment || !limit) {
         return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Add maximum limit validation
+    const maxLimit = 500000; // 500K maximum
+    if (parseInt(limit) > maxLimit) {
+        return res.status(400).json({ error: `Maximum limit is ${maxLimit.toLocaleString()}` });
     }
 
     const me = await getMe(req.session.token);
