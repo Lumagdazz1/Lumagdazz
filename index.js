@@ -12,9 +12,9 @@ const PORT = process.env.PORT || 6237;
 const dbConfig = {
     host: 'db2.sillydevelopment.co.uk',
     port: 3306,
-    user: 'u58324_ZbXzVG1jbo',
-    password: '0NRu2YGYx^RXO71UWEX@@1Dv',
-    database: 's58324_Impostor'
+    user: 'u57451_A8camXRKa5',
+    password: 'NTuvFe@qxw3K=CGobktiEYhe',
+    database: 's57451_Auto'
 };
 
 app.use(bodyParser.urlencoded({ extended: true }));
